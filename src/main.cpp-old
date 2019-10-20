@@ -1,0 +1,92 @@
+#include <Arduino.h>
+//#define FASTLED_ESP32_RAW_PIN_ORDER
+//#define FASTLED_ALLOW_INTERRUPTS 0
+//#define FASTLED_INTERRUPT_RETRY_COUNT 0
+//#define INTERRUPT_THRESHOLD 1
+//#include <FastLED.h>
+//#include <LedMeter.h>
+#include <Wire.h>
+#include "SSD1306.h" 
+
+#include <Encoder.h>
+#define LED_PIN GPIO_NUM_12
+#define ROTARY_ENCODER_A_PIN GPIO_NUM_36
+#define ROTARY_ENCODER_B_PIN GPIO_NUM_39
+#define ROTARY_ENCODER_BUTTON_PIN 35
+#define ROTARY_ENCODER_VCC_PIN -1
+//#define LED_CNT 13
+// 0X3C+SA0 - 0x3C or 0x3D
+#define I2C_ADDRESS 0x3C
+#define I2C_SDA A4
+#define I2C_SCL A5
+//#define COUNTER_MAX 13
+int32_t setting_value = 0;
+
+//int8_t countdown = COUNTER_MAX;
+SSD1306  display(I2C_ADDRESS,I2C_SDA, I2C_SCL);
+// AiEsp32RotaryEncoder rotaryEncoder = AiEsp32RotaryEncoder(
+//     ROTARY_ENCODER_A_PIN, 
+//     ROTARY_ENCODER_B_PIN, 
+//     ROTARY_ENCODER_BUTTON_PIN, 
+//     ROTARY_ENCODER_VCC_PIN
+//     );
+Encoder rotaryEncoder (2,3 );
+
+//CRGB leds[LED_CNT];
+//LedRange timer1Range [1] = {  { 0, COUNTER_MAX } } ; 
+//LedMeter timer1Meter = LedMeter(leds,timer1Range,1,CRGB::Blue, CRGB::Black);
+
+void drawFontFaceDemo() {
+
+    // Font Demo1
+    // create more fonts at http://oleddisplay.squix.ch/
+    display.setTextAlignment(TEXT_ALIGN_LEFT);
+    display.setFont(ArialMT_Plain_10);
+    display.drawString(0, 0, "Hello world");
+    display.setFont(ArialMT_Plain_16);
+    display.drawString(0, 10, "Hello world3");
+    display.setFont(ArialMT_Plain_24);
+    display.drawString(0, 26, "Hello world3");
+}
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("Hello Serial");
+  //rotaryEncoder.
+  //rotaryEncoder.begin();
+  //rotaryEncoder.setup([]{rotaryEncoder.readEncoder_ISR();});
+  Wire.begin();
+  display.init();
+  display.clear();
+  drawFontFaceDemo();
+  display.display();
+  //rotaryEncoder.enable();
+  //FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, LED_CNT);
+  //timer1Meter.setMaxValue(COUNTER_MAX);
+}
+
+/*
+void led_loop(){
+  countdown -= 1;
+  if ( countdown < 0 ){
+    countdown = COUNTER_MAX;
+  }
+  timer1Meter.setValue(countdown);
+  //timer1Meter.update();
+  //FastLED.show();
+}*/
+long oldPosition  = -999;
+void rotary_loop() {
+  long newPosition = rotaryEncoder.read();
+  if (newPosition != oldPosition) {
+    oldPosition = newPosition;
+    Serial.println(newPosition);
+  }
+}
+
+void loop() {
+  rotary_loop();
+  delay(100);
+  //led_loop();
+  //FastLED.delay(1000);
+}
